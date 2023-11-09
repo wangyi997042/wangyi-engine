@@ -1,0 +1,17 @@
+{
+  "name": "wangyi-engine",
+  "version": "1.0.1-0",
+  "description": "一款渲染引擎工具",
+  "main": "index.js",
+  "homepage": "https://github.com/wangyi997042/wangyi-engine",
+  "bugs": {
+    "url": "https://github.com/wangyi997042/wangyi-engine/issues",
+    "email": "wangyi997042@163.com"
+  },
+  "author": "wangyi997042",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "license": "ISC"
+}

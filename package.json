@@ -1,17 +1,30 @@
 {
-  "name": "wangyi-engine",
-  "version": "1.0.1-0",
-  "description": "一款渲染引擎工具",
-  "main": "index.js",
-  "homepage": "https://github.com/wangyi997042/wangyi-engine",
-  "bugs": {
-    "url": "https://github.com/wangyi997042/wangyi-engine/issues",
-    "email": "wangyi997042@163.com"
-  },
-  "author": "wangyi997042",
+  "private": true,
+  "author": "wangyi <1435247520@qq.com>",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "umi dev",
+    "build": "umi build",
+    "postinstall": "umi setup",
+    "setup": "umi setup",
+    "start": "npm run dev"
   },
-  "keywords": [],
-  "license": "ISC"
+  "dependencies": {
+    "ahooks": "^3.7.8",
+    "antd": "^5.11.1",
+    "antd-mobile": "^5.33.0",
+    "classnames": "^2.3.2",
+    "lodash": "^4.17.21",
+    "lodash.clonedeep": "^4.5.0",
+    "lodash.get": "^4.4.2",
+    "lodash.hasin": "^4.5.2",
+    "lodash.set": "^4.3.2",
+    "umi": "^4.0.88"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.0.2",
+    "typescript": "^5.2.2"
+  }
 }

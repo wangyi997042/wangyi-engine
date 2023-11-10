@@ -1,0 +1,5 @@
+assets/
+dist/
+lib/
+node_modules/
+bodyScroll.ts

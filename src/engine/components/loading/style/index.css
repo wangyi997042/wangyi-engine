@@ -1,0 +1,29 @@
+.cre-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  user-select: none;
+  z-index: 1500;
+}
+
+.cre-loading--open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cre-loading__container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  padding: 20px 15px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, .8);
+  color: #fff;
+}

@@ -6,12 +6,17 @@
     "build": "umi build",
     "postinstall": "umi setup",
     "setup": "umi setup",
-    "start": "npm run dev"
+    "start": "npm run dev",
+    "bundle": "webpack --config webpack.config.js"
   },
+  "main": "dist/index.js",
   "dependencies": {
+    "@umijs/max": "^4.4.6",
     "ahooks": "^3.7.8",
     "antd": "^5.11.1",
     "antd-mobile": "^5.33.0",
+    "axios": "^1.8.4",
+    "blueimp-md5": "^2.19.0",
     "classnames": "^2.3.2",
     "lodash": "^4.17.21",
     "lodash.clonedeep": "^4.5.0",
@@ -21,10 +26,17 @@
     "umi": "^4.0.88"
   },
   "devDependencies": {
+    "@babel/core": "^7.23.6",
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
+    "@babel/preset-typescript": "^7.27.0",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
+    "babel-loader": "^9.2.1",
     "husky": "^8.0.3",
     "lint-staged": "^15.0.2",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
   }
 }

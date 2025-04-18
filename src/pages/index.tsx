@@ -1,6 +1,12 @@
 import React from 'react';
 
+import {getWidgetList} from "@/api/index"
+
 export default function HomePage() {
+  // const { data, error, loading } = useRequest(() => {
+  //   return getWidgetList();
+  // });
+
   const dataSource = {
     "widget": "page",
     "childrens": [

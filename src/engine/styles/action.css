@@ -1,0 +1,125 @@
+/* modal mobile */
+.cre-modal-mobile .cre-modal__footer,
+.cre-alert-mobile .cre-modal__footer {
+  border-top: 1px solid #eee;
+}
+
+.cre-modal-mobile .cre-modal-button,
+.cre-alert-mobile .cre-alert-button {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 44px;
+  line-height: 44px;
+  padding: 0 15px;
+  font-size: 16px;
+  color: #057aff;
+  background: none;
+  border: none;
+}
+
+.cre-modal-mobile .cre-modal-button:first-child {
+  color: #999;
+}
+
+.cre-modal-mobile .cre-modal-button:nth-child(odd):before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 1px;
+  height: 16px;
+  margin-top: -8px;
+  overflow: hidden;
+  background: #ddd;
+}
+
+/* type line */
+.cre-modal-line .cre-modal__footer {
+  display: block;
+}
+
+.cre-modal-line .cre-modal-button {
+  position: relative;
+}
+
+.cre-modal-line .cre-modal-button:before,
+.cre-modal-line .cre-modal-button:nth-child(odd):before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 1px;
+  overflow: hidden;
+  background: #eee;
+}
+
+.cre-modal-line .cre-modal-button:nth-child(odd):before{
+  margin-top: 0;
+}
+
+.cre-modal-line .cre-modal-button:first-child {
+  color: #057aff;
+}
+
+.cre-modal-line .cre-modal-button:last-child {
+  color: #999;
+}
+
+.cre-modal-line .cre-modal-button:first-child:before {
+  display: none;
+}
+
+/* web */
+.cre-modal-web .cre-modal__footer,
+.cre-alert-web .cre-modal__footer {
+  display: block;
+  padding: 10px 15px;
+  text-align: right;
+  border-top: 1px solid #e8e8e8;
+}
+
+.cre-modal-web .cre-modal-button,
+.cre-alert-web .cre-alert-button {
+  height: 32px;
+  line-height: 32px;
+  padding: 0 15px;
+  font-size: 14px;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  text-align: center;
+  color: #333;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+}
+
+.cre-modal-web .cre-modal-button+button {
+  margin-left: 8px;
+  background: #1890ff;
+  border-color: #1890ff;
+  color: #fff;
+}
+
+.cre-alert-web .cre-alert-button {
+  background: #1890ff;
+  border-color: #1890ff;
+  color: #fff;
+}
+
+.model-copy-btn {
+  display: inline-block;
+  margin-left: 12px;
+  font-size: 14px;
+  color: #057aff;
+}
+
+.modal-toast-body-center {
+  text-align: center;
+  color: #666;
+}
+
+.cre-modal-mobile .cre-modal-button.modal-toast-button-color {
+  color: #057aff;
+  height: 49px;
+}

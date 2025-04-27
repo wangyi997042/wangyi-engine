@@ -1,29 +1,25 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/engine/index.tsx',
+  entry: './src/engine/index.tsx', // 指定 engine 文件夹的入口文件
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'index.js', // CommonJS 格式的文件
+    path: path.resolve(__dirname, 'dist'), // 输出目录
+    filename: 'index.js', // 输出文件名
     libraryTarget: 'commonjs2', // 输出为 CommonJS 格式
-    // filename: 'index.js',
-    // library: 'MyLibrary',
-    // libraryTarget: 'umd',
-    globalObject: 'this',
-    clean: true,
+    clean: true, // 清理输出目录
   },
-  mode: 'production',
+  mode: 'production', // 打包模式
   module: {
     rules: [
       {
-        test: /\.(ts|tsx)$/,
-        exclude: /node_modules/,
+        test: /\.(ts|tsx)$/, // 处理 .ts 和 .tsx 文件
+        exclude: /node_modules/, // 排除 node_modules
         use: {
           loader: 'babel-loader',
           options: {
             presets: [
-              '@babel/preset-env',
-              '@babel/preset-react',
+              '@babel/preset-env', // 转换 ES6+ 语法
+              '@babel/preset-react', // 转换 JSX
               [
                 '@babel/preset-typescript',
                 {
@@ -35,16 +31,16 @@ module.exports = {
         },
       },
       {
-        test: /\.css$/,
+        test: /\.css$/, // 处理 CSS 文件
         use: ['style-loader', 'css-loader'],
       },
     ],
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+    extensions: ['.ts', '.tsx', '.js', '.jsx'], // 自动解析扩展名
   },
   externals: {
-    react: 'React',
-    'react-dom': 'ReactDOM',
+    react: 'commonjs react', // 将 react 作为外部依赖
+    'react-dom': 'commonjs react-dom', // 将 react-dom 作为外部依赖
   },
 };

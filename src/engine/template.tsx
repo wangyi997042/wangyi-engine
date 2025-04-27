@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { isObject, isInApp, isIOS, uuid } from './utils/tools';
-import { tips, copy } from './action';
+import { tips, copy } from './action/oldaction';
 
 // 兼容pc 渲染问题 \\"
 /* eslint-disable no-useless-escape */
@@ -27,6 +27,10 @@ const attrReserved: string[] = [
  * @param {string} text 内容
  */
 const stringifyHTML = (text: string) => {
+  if (typeof text !== 'string') {
+    return text;
+  }
+
   return text.replace(/\r?\n/g, '\\n');
 };
 
@@ -35,11 +39,11 @@ const stringifyHTML = (text: string) => {
  * @param text 文本
  */
 const parseAttr = (text: string): any => {
-  if (!text) {
+  if (!text || typeof text !== 'string') {
     return {};
   }
 
-  const attrs = {};
+  const attrs: { [key: string]: any } = {};
 
   text
     // style={"color": "red"}
@@ -74,9 +78,9 @@ const parseAttr = (text: string): any => {
  * return any[]
  */
 const lineBreak = (tpl: string) => {
-  if (tpl && (tpl.match(REG_BR) || []).length) {
+  if (typeof tpl === 'string' && (tpl.match(REG_BR) || []).length) {
     const parseDOM: any[] = [];
-    let placeIndex: number = 0;
+    let placeIndex = 0;
 
     tpl.replace(REG_BR, (
       and: string,
@@ -161,12 +165,12 @@ const renderTag = (text: string, startTag: string): any => {
         // 提示层
         case 'modal':
           // eslint-disable-next-line
-          parseTag = <a key={_id} href="javascript:" onClick={() => tips(lineBreak(value), label)} {...others}>{text || label}</a>;
+          parseTag = <a key={_id} href="javascript:" onClick={() => tips({ content: lineBreak(value), label }, {})} {...others}>{text || label}</a>;
           break;
         // 提示层
         case 'copy':
           // eslint-disable-next-line
-          parseTag = <a key={_id} href="javascript:" onClick={() => copy({text: value})} {...others}>{text || label}</a>;
+          parseTag = <a key={_id} href="javascript:" onClick={() => copy({ text: value })} {...others}>{text || label}</a>;
           break;
         default:
           break;
@@ -218,13 +222,13 @@ const scopeData = (data: any) => {
  * @param {object} data 数据
  */
 const compile = (tpl: string, data: any) => {
-  if (!tpl) {
+  if (!tpl || typeof tpl !== 'string') {
     return tpl;
   }
 
   let match: any;
-  let code: string = 'var __code__ = [];\nwith (__data__) {\n';
-  let placeIndex: number = 0;
+  let code = 'var __code__ = [];\nwith (__data__) {\n';
+  let placeIndex = 0;
 
   // 解析html
   function parseHTML(line: string) {
@@ -288,12 +292,12 @@ const compile = (tpl: string, data: any) => {
  * @param _data 数据
  */
 const template = (tpl: string, data?: any) => {
-  if (!tpl) {
+  if (!tpl || typeof tpl !== 'string') {
     return '';
   }
 
   const parseDOM: any[] = [];
-  let placeIndex: number = 0;
+  let placeIndex = 0;
 
   // 替换value
   if ((tpl.match(REG_VALUE) || []).length) {
@@ -341,7 +345,7 @@ const template = (tpl: string, data?: any) => {
       }
 
       return <span>{parseDOM}</span>;
-    // 文字无解析标签
+      // 文字无解析标签
     } if ((tpl.match(REG_BR) || []).length) {
       return <span>{lineBreak(tpl)}</span>;
     }

@@ -1,5 +1,5 @@
 import { isObject, isWindows } from './tools';
-import { idCard } from './validates';
+import { idCard, toTrim } from './validates';
 
 /**
  * 转换数字
@@ -78,9 +78,9 @@ export function formatDateAge(date: any, opts?: { currentDate: string }): number
   if (
     opts
     && opts.currentDate
-    && typeof keys[opts.currentDate] !== 'undefined'
+    && typeof keys[opts.currentDate as keyof typeof keys] !== 'undefined'
   ) {
-    today.setDate(today.getDate() + keys[opts.currentDate]);
+    today.setDate(today.getDate() + keys[opts.currentDate as keyof typeof keys]);
   }
 
   const birthDate = new Date(date.toString().replace(/-/g, '/'));
@@ -99,7 +99,7 @@ export function formatDateAge(date: any, opts?: { currentDate: string }): number
  * @param {string} value   内容
  * @param {string} name    key值
  */
-export function findValueObject(value: any, name: string = 'value') {
+export function findValueObject(value: any, name = 'value') {
   if (value && isObject(value)) {
     value = value[name];
   }
@@ -125,4 +125,153 @@ export function formatCertAge(value: string) {
   return 0;
 }
 
-// indexOf
+/**
+ * 正则
+ */
+export const regex = {
+  // 手机
+  mobile: /^1\d{10}$/,
+  // 邮箱
+  email: /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/,
+  // 钱
+  money: /^([1-9][\d]{0,7}|0)(\.[\d]{1,2})?$/,
+  // 用户
+  name: /^([\u4e00-\u9fa5]+|[a-zA-Z0-9]+)$/,
+  // 密码
+  pwd: /(\d(?!\d{5})|[A-Za-z](?![A-Za-z]{5})){6}/,
+  // 身份证
+  idCardNo: /(^\d{15}$)|(^\d{17}([0-9]|X)$)/,
+};
+
+/**
+ * 判断规则
+ * @param {reg}    reg   正则
+ * @param {string} value 值
+ */
+export const isRule = (reg: RegExp, value: string) => {
+  if (!value || value.length === 0) {
+    return false;
+  }
+
+  if (!(reg instanceof RegExp)) {
+    throw new Error('The rule shoud be RegExp');
+  }
+
+  if (!reg.test(value)) {
+    return false;
+  }
+
+  return true;
+};
+
+/**
+ * 验证
+ */
+export const rules = {
+  // 验证不为空
+  isNotEmpty: (value: string) => {
+    return value && value.length > 0;
+  },
+  // 验证手机
+  isMobile: (value: string) => {
+    return isRule(regex.mobile, value);
+  },
+  // 验证邮箱
+  isEmail: (value: string) => {
+    return isRule(regex.email, value);
+  },
+  // 验证金钱
+  isMoney: (value: string) => {
+    return isRule(regex.money, value);
+  },
+  // 验证用户名
+  isUsername: (value: string) => {
+    return isRule(regex.name, value);
+  },
+  // 验证用户名
+  isPwd: (value: string) => {
+    return isRule(regex.pwd, value);
+  },
+  // 验证身份证
+  isIdCard: (value: string) => {
+    if (!value || value.length !== 18) {
+      return false;
+    }
+
+    value = toTrim(value);
+
+    // eslint-disable-next-line max-len
+    const city = { 11: '北京', 12: '天津', 13: '河北', 14: '山西', 15: '内蒙古', 21: '辽宁', 22: '吉林', 23: '黑龙江', 31: '上海', 32: '江苏', 33: '浙江', 34: '安徽', 35: '福建', 36: '江西', 37: '山东', 41: '河南', 42: '湖北', 43: '湖南', 44: '广东', 45: '广西', 46: '海南', 50: '重庆', 51: '四川', 52: '贵州', 53: '云南', 54: '西藏', 61: '陕西', 62: '甘肃', 63: '青海', 64: '宁夏', 65: '新疆', 71: '台湾', 81: '香港', 82: '澳门', 91: '国外' };
+    const factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+    const parity = [1, 0, 'X', 9, 8, 7, 6, 5, 4, 3, 2];
+    const birthday = `${value.substr(6, 4)}/${Number(value.substr(10, 2))}/${Number(value.substr(12, 2))}`;
+    const d = new Date(birthday);
+    const newBirthday = `${d.getFullYear()}/${Number(d.getMonth() + 1)}/${Number(d.getDate())}`;
+    const time = d.getTime();
+    const currentTime = new Date().getTime();
+
+    if (!value || !/^\d{6}(18|19|20)?\d{2}(0[1-9]|1[012])(0[1-9]|[12]\d|3[01])\d{3}(\d|X)$/i.test(value)) {
+      return false;
+    }
+
+    // 非法地区
+    if (!city[value.substr(0, 2) as unknown as keyof typeof city]) {
+      return false;
+    }
+
+    if (time >= currentTime || birthday !== newBirthday) {
+      return false;
+    }
+
+    if (value.length === 18) {
+      let sum = 0;
+
+      for (let i = 0; i < 17; i += 1) {
+        sum += (value.substr(i, 1) as unknown as number) * factor[i];
+      }
+
+      // 校验位错误
+      // eslint-disable-next-line
+      if (parity[sum % 11] != value.substr(17, 1)) {
+        return false;
+      }
+    }
+
+    return true;
+    // callback();
+  },
+  // 获取身份证出生日期／性别
+  getIdCard: (value: string) => {
+    if (!value) {
+      return true;
+    }
+
+    const number = value.toUpperCase();
+
+    // 身份证号码为15位或者18位，15位时全为数字，18位前17位为数字，最后一位是校验位，可能为数字或字符X
+    if (!rules.isIdCard(number)) {
+      return false;
+    }
+
+    const len = number.length;
+    let birthday = '1990-01-01';
+    let sex = 'M';
+
+    if (len === 15) {
+      // 获取出生日期
+      birthday = `19${value.substring(6, 8)}-${value.substring(8, 10)}-${value.substring(10, 12)}`;
+      // 获取性别
+      sex = ((+value.substr(14, 1) % 2) === 1) ? 'M' : 'F';
+    } else {
+      // 获取出生日期
+      birthday = `${value.substring(6, 10)}-${value.substring(10, 12)}-${value.substring(12, 14)}`;
+      // 获取性别
+      sex = ((+value.substr(16, 1) % 2) === 1) ? 'M' : 'F';
+    }
+
+    return {
+      birthday,
+      sex,
+    };
+  },
+};

@@ -1,6 +1,24 @@
 {
   "private": true,
-  "author": "wangyi <1435247520@qq.com>",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wangyi997042/wangyi-engine.git"
+  },
+  "name": "wangyi-engine",
+  "version": "1.0.1-0",
+  "description": "一款渲染引擎工具",
+  "homepage": "https://github.com/wangyi997042/wangyi-engine",
+  "bugs": {
+    "url": "https://github.com/wangyi997042/wangyi-engine/issues",
+    "email": "wangyi997042@163.com"
+  },
+  "author": "wangyi997042",
   "scripts": {
     "dev": "umi dev",
     "build": "umi build",
@@ -9,9 +27,7 @@
     "start": "npm run dev",
     "bundle": "webpack --config webpack.config.js"
   },
-  "main": "dist/index.js",
   "dependencies": {
-    "@umijs/max": "^4.4.6",
     "ahooks": "^3.7.8",
     "antd": "^5.11.1",
     "antd-mobile": "^5.33.0",
@@ -30,6 +46,10 @@
     "@babel/preset-env": "^7.26.9",
     "@babel/preset-react": "^7.26.3",
     "@babel/preset-typescript": "^7.27.0",
+    "@types/lodash.clonedeep": "^4.5.7",
+    "@types/lodash.get": "^4.4.7",
+    "@types/lodash.hasin": "^4.5.7",
+    "@types/lodash.set": "^4.3.7",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "babel-loader": "^9.2.1",

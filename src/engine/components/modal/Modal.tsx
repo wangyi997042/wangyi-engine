@@ -6,7 +6,13 @@ import Popup from '../popup';
 
 export interface ModalProps extends BaseModalProps {
   prefixCls?: string;
-  className?: string;
+  className: string;
+  visible?: boolean,
+  animationType?: 'fade',
+  animationDuration?: 200,
+  width?: string,
+  children?: React.ReactNode;
+  shape?: 'radius',
 }
 
 export default class Modal extends Component<ModalProps, any> {
@@ -36,9 +42,9 @@ export default class Modal extends Component<ModalProps, any> {
 
     const cls = {
       modal: classnames(prefixCls, className, {
-        [`${prefixCls}--${shape}`]: !!shape,
+        [`${prefixCls}-${shape}`]: !!shape,
       }),
-      dialog: classnames(`${prefixCls}__dialog`),
+      dialog: classnames(`${prefixCls}-dialog`),
     };
 
     return (

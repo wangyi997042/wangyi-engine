@@ -9,13 +9,13 @@
   z-index: 1500;
 }
 
-.cre-loading--open {
+.cre-loading-open {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.cre-loading__container {
+.cre-loading-container {
   position: relative;
   display: flex;
   align-items: center;
@@ -24,6 +24,6 @@
   height: 80px;
   padding: 20px 15px;
   border-radius: 4px;
-  background: rgba(0, 0, 0, .8);
+  background: #000c;
   color: #fff;
 }

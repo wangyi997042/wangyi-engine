@@ -5,7 +5,7 @@ import { BaseModalHeaderProps } from './PropsType';
 
 export interface ModalHeaderProps extends BaseModalHeaderProps {
   prefixCls?: string;
-  className?: string;
+  className: string;
 }
 
 export default class ModalHeader extends PureComponent<ModalHeaderProps, {}> {
@@ -15,11 +15,11 @@ export default class ModalHeader extends PureComponent<ModalHeaderProps, {}> {
 
   render() {
     const { prefixCls, className, title, closable, onClose, ...others } = this.props;
-    const cls = classnames(`${prefixCls}__header`, className);
-    const btnClose = closable && <span className={`${prefixCls}__header__close`} onClick={onClose} />;
+    const cls = classnames(`${prefixCls}-header`, className);
+    const btnClose = closable && <span className={`${prefixCls}-header-close`} onClick={onClose} />;
     return (
       <div className={cls} {...others}>
-        <div className={`${prefixCls}__header__title`}>{title}</div>
+        <div className={`${prefixCls}-header-title`}>{title}</div>
         {btnClose}
       </div>
     );

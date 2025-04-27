@@ -1,12 +1,12 @@
 import { ReactNode } from 'react';
 
 export interface BaseModalProps {
-  shape?: 'rect';
+  shape?: 'rect' | 'radius';
   visible?: boolean;
   animationType?:
-    'fade' | 'door' | 'flip' | 'rotate' | 'zoom' |
-    'moveUp' | 'moveDown' | 'moveLeft' | 'moveRight' |
-    'slideUp' | 'slideDown' | 'slideLeft' | 'slideRight';
+  'fade' | 'door' | 'flip' | 'rotate' | 'zoom' |
+  'moveUp' | 'moveDown' | 'moveLeft' | 'moveRight' |
+  'slideUp' | 'slideDown' | 'slideLeft' | 'slideRight';
   animationDuration?: number;
   width?: string | number;
   afterClose?: () => void;

@@ -4,7 +4,8 @@ import { BaseModalFooterProps } from './PropsType';
 
 export interface ModalFooterProps extends BaseModalFooterProps {
   prefixCls?: string;
-  className?: string;
+  className: string;
+  children?: React.ReactNode;
 }
 
 export default class ModalFooter extends PureComponent<ModalFooterProps, {}> {
@@ -14,8 +15,8 @@ export default class ModalFooter extends PureComponent<ModalFooterProps, {}> {
 
   render() {
     const { prefixCls, className, block, children, ...others } = this.props;
-    const cls = classnames(`${prefixCls}__footer`, className, {
-      [`${prefixCls}__footer--block`]: block,
+    const cls = classnames(`${prefixCls}-footer`, className, {
+      [`${prefixCls}-footer-block`]: block,
     });
 
     return (

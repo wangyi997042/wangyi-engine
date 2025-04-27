@@ -6,6 +6,7 @@ import Popup from '../popup';
 export interface ToastProps extends PropsType {
   prefixCls?: string;
   className?: string;
+  children?: React.ReactNode;
 }
 
 export default class Toast extends Component<ToastProps, any> {
@@ -20,13 +21,13 @@ export default class Toast extends Component<ToastProps, any> {
     visible: this.props.visible,
   };
 
-  timer;
+  timer?: NodeJS.Timeout;
 
   componentDidMount() {
     this.autoClose();
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(nextProps: ToastProps) {
     const { visible } = this.props;
 
     if (nextProps.visible !== visible) {
@@ -95,7 +96,7 @@ export default class Toast extends Component<ToastProps, any> {
         afterClose={this.afterClose}
       >
         <div className={cls}>
-          <div className={`${prefixCls}__container`}>{children}</div>
+          <div className={`${prefixCls}-container`}>{children}</div>
         </div>
       </Popup>
     );

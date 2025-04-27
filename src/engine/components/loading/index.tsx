@@ -7,15 +7,20 @@ import ActivityIndicator from '../activity-indicator';
 export interface LoadingProps extends PropsType {
   prefixCls?: string;
   className?: string;
+  mask?: boolean;
+  children?: React.ReactNode;
 }
 
 export default class Loading extends PureComponent<LoadingProps, {}> {
   static defaultProps = {
     prefixCls: 'cre-loading',
+    className: undefined,
     mask: true,
   };
 
   static creLoading: null | HTMLElement;
+
+  static _hide: () => void;
 
   static show = (children?: any, stayTime?: number, mask?: boolean, afterClose?: () => void) => {
     Loading.unmountNode();
@@ -33,8 +38,6 @@ export default class Loading extends PureComponent<LoadingProps, {}> {
     }
   };
 
-  static _hide: () => void;
-
   static hide = () => {
     if (Loading._hide) {
       Loading._hide();
@@ -48,7 +51,7 @@ export default class Loading extends PureComponent<LoadingProps, {}> {
     }
   };
 
-  private timer;
+  private timer?: NodeJS.Timeout;
 
   state = {
     visible: this.props.visible,
@@ -59,7 +62,7 @@ export default class Loading extends PureComponent<LoadingProps, {}> {
     this.autoClose();
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(nextProps: LoadingProps) {
     const { visible } = this.props;
 
     if (nextProps.visible !== visible) {

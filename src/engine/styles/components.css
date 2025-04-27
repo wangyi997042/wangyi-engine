@@ -1,8 +1,9 @@
-@import "../components/mask/style/index.css";
-@import "../components/popup/style/index.css";
-@import "../components/toast/style/index.css";
-@import "../components/modal/style/index.css";
-@import "../components/loading/style/index.css";
-@import "../components/activity-indicator/style/index.css";
+@import '../components/mask/style/index.css';
+@import '../components/popup/style/index.css';
+@import '../components/toast/style/index.css';
+@import '../components/modal/style/index.css';
+@import '../components/loading/style/index.css';
+@import '../components/cell/style/index.css';
+@import '../components/activity-indicator/style/index.css';
 
-@import "./action.css";
+@import './action.css';

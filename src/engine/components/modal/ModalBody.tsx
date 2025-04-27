@@ -4,7 +4,8 @@ import { BaseModalBodyProps } from './PropsType';
 
 export interface ModalBodyProps extends BaseModalBodyProps {
   prefixCls?: string;
-  className?: string;
+  className: string;
+  children?: React.ReactNode;
 }
 
 export default class ModalBody extends PureComponent<ModalBodyProps, {}> {
@@ -14,7 +15,7 @@ export default class ModalBody extends PureComponent<ModalBodyProps, {}> {
 
   render() {
     const { prefixCls, className, height, children, ...others } = this.props;
-    const cls = classnames(`${prefixCls}__body`, className);
+    const cls = classnames(`${prefixCls}-body`, className);
 
     const bodyStyle: CSSProperties = {};
     bodyStyle.height = height;

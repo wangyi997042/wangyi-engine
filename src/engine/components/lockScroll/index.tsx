@@ -3,13 +3,14 @@ import { disableBodyScroll, enableBodyScroll, clearAllBodyScrollLocks } from './
 
 export interface ILockScroll {
   visible?: boolean;
-  children: React.ReactElement
+  children: React.ReactElement;
 }
 
 const getPropsVisible = (props: ILockScroll) => {
-  const { visible: componentVisible, children } = props;
+  const { visible, children } = props;
   let childrenVisible = false;
-  if (componentVisible === undefined) {
+
+  if (visible === undefined) {
     if (Array.isArray(children)) {
       childrenVisible = children.some((item) => item.props.visible);
     }
@@ -18,15 +19,19 @@ const getPropsVisible = (props: ILockScroll) => {
     }
     return childrenVisible;
   }
-  childrenVisible = componentVisible;
+  childrenVisible = visible;
 
   return childrenVisible;
 };
 
 class LockScroll extends React.PureComponent<ILockScroll> {
+  static defaultProps = {
+    visible: false,
+  };
+
   dom: HTMLDivElement;
 
-  constructor(props) {
+  constructor(props: ILockScroll) {
     super(props);
     this.dom = document.createElement('div');
   }
@@ -37,8 +42,10 @@ class LockScroll extends React.PureComponent<ILockScroll> {
   }
 
   setLock = () => {
-    const visible = getPropsVisible(this.props);
+    const { visible: propVisible, children } = this.props;
+    const visible = getPropsVisible({ visible: propVisible, children });
     const { dom } = this;
+
     if (visible) {
       document.body.appendChild(dom);
       disableBodyScroll(dom, {
@@ -46,9 +53,9 @@ class LockScroll extends React.PureComponent<ILockScroll> {
           while (el && el !== document.body) {
             const { className } = el;
             if (className && (
-              className.indexOf('za-modal__dialog') > 0
-              || className.indexOf('za-modal__body') > 0
-              || className.indexOf('za-popup--show') > 0
+              className.indexOf('za-modal-dialog') > 0
+              || className.indexOf('za-modal-body') > 0
+              || className.indexOf('za-popup-show') > 0
             )) {
               return true;
             }
@@ -69,7 +76,7 @@ class LockScroll extends React.PureComponent<ILockScroll> {
     }
   };
 
-  render() {
+  render(): any {
     const { children } = this.props;
     if (!children) {
       return null;

@@ -1,11 +1,12 @@
-import md5 from 'blueimp-md5';
-
+import cloneDeep from 'lodash.clonedeep';
+import _set from 'lodash.set';
+import { TPath } from '../render';
 import {
   WindowProps,
-  EngineProps,
+  ObjectProps,
 } from '../types';
 
-declare var window: WindowProps;
+declare let window: WindowProps;
 
 let root: any = {};
 
@@ -17,6 +18,7 @@ const UA = (typeof window === 'undefined') ? '' : root.navigator.userAgent.toLow
 
 // 移动端
 export const isMobile = /android|iphone|iPad|ipod|windows\sphone/.test(UA);
+
 export const isIOS = /iPhone|iPad|iPod/i.test(UA);
 // App内
 export const isInApp = false;
@@ -29,59 +31,20 @@ export const isInWechat = !!~UA.indexOf('micromessenger');
  * 对象检测
  * @param value
  */
-export const isObject = (value: any) => {
-  return value && typeof value === 'object' && value.constructor === Object;
+export const isObject = (value: any): value is ObjectProps => {
+  return Reflect.toString.call(value) === '[object Object]';
 };
 
 /**
  * 函数检测
  * @param func
  */
-export const isFunction = (func: any) => {
+export const isFunction = (func: any): func is ((...arg: any) => any) => {
   return typeof func === 'function';
 };
 
-/**
- * 比对数组，过滤values 值
- * @param array
- * @param values
- */
-export const difference = (array: string[], values?: string[]) => {
-  if (!(array && Array.isArray(array) && array.length)) {
-    return [];
-  }
-
-  if (!(values && Array.isArray(values) && values.length)) {
-    return array;
-  }
-
-  const result: string[] = [];
-
-  array.forEach((key) => {
-    if (values.indexOf(key) < 0) {
-      result.push(key);
-    }
-  });
-
-  return result;
-};
-
-type DiffchangeProps = {
-  [propName: string]: any;
-};
-
-/**
- * 比对触发数据
- * @param {string[]} attrs 属性表
- * @param {object}   from  数据1
- * @param {object}   to    数据2
- */
-export const diffchange = (
-  attrs: string[],
-  from: DiffchangeProps,
-  to: DiffchangeProps,
-) => {
-  return attrs.some((key) => from[key] !== to[key]);
+export const setValue = (obj: object, names: TPath, value: any) => {
+  _set(obj, names, value);
 };
 
 /**
@@ -89,69 +52,22 @@ export const diffchange = (
  * @param {array|object} data 数据
  */
 export const deepCopy = (data: any) => {
-  if (Array.isArray(data)) {
-    return data.slice().map((item) => deepCopy(item));
-  }
-
-  if (Object.prototype.toString.call(data) === '[object Object]') {
-    const keys = Object.keys(data);
-    const dataProto = Object.getPrototypeOf(data);
-    const out = (dataProto === Object.prototype) ? {} : Object.create(dataProto);
-
-    keys.reduce((cur, key) => {
-      cur[key] = deepCopy(data[key]);
-      return cur;
-    }, out);
-
-    return out;
-  }
-
-  return data;
+  return cloneDeep(data);
 };
 
-/**
- * 深断言
- * @param {array|object} data1 数据1
- * @param {array|object} data2 数据2
- */
-export const deepAsset = (data1: any, data2: any) => {
-  return JSON.stringify(data1) === JSON.stringify(data2);
-};
+export const promiseContral = () => {
+  let dresolve: (value?: unknown) => void = () => undefined;
+  let dreject: (value?: unknown) => void = () => undefined;
+  const promiseobj = new Promise((resolve, reject) => {
+    dresolve = resolve;
+    dreject = reject;
+  });
 
-/**
- * 对象是否值相等
- * @param {object} data1 数据1
- * @param {object} data2 数据2
- */
-export const isEquals = (x: any, y: any) => {
-  // x 和 y 未空，两边不相同
-  if (x === y) return true;
-
-  if (!(x instanceof Object) || !(y instanceof Object)) return false;
-
-  // 必须完全相同原型链
-  if (x.constructor !== y.constructor) return false;
-
-  const keysX = Object.keys(x);
-  const keysY = Object.keys(y);
-
-  // 长度不相等
-  if (keysX.length !== keysY.length) return false;
-
-  for (let i = 0; i < keysX.length; i += 1) {
-    const propName = keysX[i];
-
-    // value等于object、function
-    if (typeof x[propName] === 'object' || typeof x[propName] === 'function') {
-      if (!deepAsset(x[propName], y[propName])) {
-        return false;
-      }
-    } else if (x[propName] !== y[propName]) {
-      return false;
-    }
-  }
-
-  return true;
+  return {
+    promiseobj,
+    resolve: dresolve,
+    reject: dreject,
+  };
 };
 
 /**
@@ -166,8 +82,8 @@ export const urlAllParams = (url?: string) => {
 
   // Regex for replacing addition symbol with a space
   const pl = /\+/g;
-  const urlParams = {};
-  const decode = (s) => decodeURIComponent(s.replace(pl, ' '));
+  const urlParams: { [key: string]: string } = {};
+  const decode = (s: string) => decodeURIComponent(s.replace(pl, ' '));
 
   url = url.replace(/[?&]+([^=&]+)=([^&]*)/gi, (_m: string, key: string, value: string): any => {
     urlParams[decode(key)] = decode(value);
@@ -179,7 +95,7 @@ export const urlAllParams = (url?: string) => {
 /**
  * 生成随机串
  */
-export const uuid = (len: number = 32) => {
+export const uuid = (len = 32) => {
   /** **默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1*** */
   const $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
   const maxPos = $chars.length;
@@ -190,70 +106,44 @@ export const uuid = (len: number = 32) => {
   return pwd;
 };
 
+export const addUuidToObj = (item: any) => {
+  if (isObject(item)) {
+    if (!item.uuid) {
+      item.uuid = uuid();
+    }
+
+    return item;
+  }
+
+  return { uuid: uuid() };
+};
+
 /**
  * 首字母转换大写
  * @param {string} str  内容
  */
 export const firstUpperCase = (str: string) => {
+  if (typeof str !== 'string') {
+    return '';
+  }
   return str.replace(/^\S/g, (s) => s.toUpperCase());
 };
 
-/**
- * 获取属性值
- * @param props
- */
-const getPropsValue: any = (props: EngineProps) => {
-  const {
-    childrens,
-    value,
-    defaultValue,
-    hidden,
-    ...rest
-  } = props;
-  const values: any[] = [];
+export function arrayHasChild(arr: any): arr is [] {
+  return Array.isArray(arr) && arr.length > 0;
+}
 
-  if (rest && Object.keys(rest).length) {
-    Object.keys(rest).forEach((key) => {
-      values.push(props[key]);
-    });
+/**
+ * 首字母转换大写
+ * @param {string} str  内容
+ */
+export const lineToHump = (str: string) => {
+  if (typeof str !== 'string') {
+    return '';
   }
 
-  return values;
+  return str.split('-').map((strItem) => firstUpperCase(strItem)).join('');
 };
-
-/**
- * 有一定规律ID
- * @param props
- */
-export function lawTreeId(
-  props: EngineProps,
-) {
-  const { childrens } = props;
-  let data: any[] = getPropsValue(props);
-
-  if (childrens && Array.isArray(childrens) && childrens.length) {
-    childrens.forEach((item) => {
-      data = data.concat(getPropsValue(item));
-    });
-  }
-
-  const value = JSON.stringify(data);
-  const hash = md5(value);
-
-  return hash ? hash.toString() : value;
-}
-
-/**
- * 序列ID
- * @param {string} value     内容
- */
-export function serialId(
-  value: string,
-) {
-  const hash = md5(value);
-
-  return hash ? hash.toString() : value;
-}
 
 /**
  * 加载小程序SDK

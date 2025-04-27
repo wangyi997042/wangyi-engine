@@ -16,7 +16,7 @@ export default class Mask extends PureComponent<MaskProps, {}> {
   render() {
     const { prefixCls, className, visible, type, ...others } = this.props;
     const markCls = classnames(prefixCls, className, {
-      [`${prefixCls}--${type}`]: !!type,
+      [`${prefixCls}-${type}`]: !!type,
     });
     return visible && <div className={markCls} {...others} />;
   }

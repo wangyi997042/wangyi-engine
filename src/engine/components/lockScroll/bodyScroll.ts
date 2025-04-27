@@ -33,10 +33,14 @@ type HandleScrollEvent = TouchEvent;
 let locks: Array<Lock> = [];
 let documentListenerAdded: boolean = false;
 let initialClientY: number = -1;
-let previousBodyOverflowSetting;
-let previousDocumentElementOverflowSetting;
-let previousBodyPosition;
-let previousBodyPaddingRight;
+let previousBodyOverflowSetting: string | undefined;
+let previousDocumentElementOverflowSetting: string | undefined;
+let previousBodyPosition: {
+  position: string;
+  top: string;
+  left: string;
+} | undefined;
+let previousBodyPaddingRight: string | undefined;
 
 // returns true if `el` should be allowed to receive touchmove events.
 const allowTouchMove = (el: EventTarget): boolean => locks.some((lock) => {
@@ -101,7 +105,7 @@ const restoreOverflowSetting = () => {
 
   if (previousBodyOverflowSetting !== undefined) {
     document.body.style.overflow = previousBodyOverflowSetting;
-    document.documentElement.style.overflow = previousDocumentElementOverflowSetting;
+    document.documentElement.style.overflow = previousDocumentElementOverflowSetting as string;
 
     // Restore previousBodyOverflowSetting to undefined
     // so setOverflowHidden knows it can be set again.

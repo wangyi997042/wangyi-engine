@@ -1,13 +1,8 @@
 import React, { PureComponent } from 'react';
-import PropsType from './PropsType';
-import Portal from './Portal';
+import Portal, { PortalProps } from './Portal';
 
-export interface PopupProps extends PropsType {
-  prefixCls?: string;
-  className?: string;
-}
-export default class Popup extends PureComponent<PopupProps, any> {
-  constructor(props) {
+export default class Popup extends PureComponent<PortalProps, any> {
+  constructor(props: PortalProps) {
     super(props);
     this.state = {
       renderPortal: true,
@@ -15,7 +10,7 @@ export default class Popup extends PureComponent<PopupProps, any> {
     this.handlePortalUnmount = this.handlePortalUnmount.bind(this);
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(nextProps: PortalProps) {
     const { visible } = this.props;
 
     if (nextProps.visible !== visible && nextProps.visible === true) {
@@ -39,6 +34,11 @@ export default class Popup extends PureComponent<PopupProps, any> {
 
   render() {
     const { renderPortal } = this.state;
-    return renderPortal && <Portal {...this.props} handlePortalUnmount={this.handlePortalUnmount} />;
+
+    if (renderPortal) {
+      return <Portal {...this.props} handlePortalUnmount={this.handlePortalUnmount} />;
+    }
+
+    return renderPortal;
   }
 }

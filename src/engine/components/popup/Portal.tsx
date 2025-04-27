@@ -9,7 +9,13 @@ const IS_REACT_16 = !!ReactDOM.createPortal;
 
 export interface PortalProps extends PropsType {
   prefixCls?: string;
-  className?: string;
+  className: string;
+  visible?: boolean;
+  mask?: boolean;
+  direction?: "bottom" | "center";
+  animationType?: "fade";
+  animationDuration?: number;
+  children?: React.ReactNode;
   handlePortalUnmount?: () => void;
 }
 
@@ -21,16 +27,16 @@ export default class Portal extends PureComponent<PortalProps, any> {
     direction: 'bottom',
     animationType: 'fade',
     animationDuration: 200,
-    // maskType: Mask.defaultProps.type,
+    handlePortalUnmount: undefined,
   };
 
-  private enterTimer: number;
+  private enterTimer?: NodeJS.Timeout;;
 
-  private popup: HTMLDivElement | null;
+  private popup?: HTMLDivElement | null;
 
-  private _container: HTMLDivElement;
+  private _container?: HTMLDivElement;
 
-  constructor(props) {
+  constructor(props: PortalProps) {
     super(props);
     this.state = {
       isShow: false,
@@ -47,7 +53,7 @@ export default class Portal extends PureComponent<PortalProps, any> {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(nextProps: PortalProps) {
     const { visible } = this.props;
     if (nextProps.visible !== visible) {
       nextProps.visible === true ? this.showPortal() : this.leave();
@@ -68,7 +74,7 @@ export default class Portal extends PureComponent<PortalProps, any> {
     }
   }
 
-  animationEnd = (e) => {
+  animationEnd = (e: AnimationEvent) => {
     e.stopPropagation();
 
     const { afterClose, afterOpen, handlePortalUnmount } = this.props;
@@ -127,13 +133,13 @@ export default class Portal extends PureComponent<PortalProps, any> {
     const { isShow, animationState, isPending } = this.state;
 
     const cls = {
-      wrapper: classnames(`${prefixCls}__wrapper`, className, {
+      wrapper: classnames(`${prefixCls}-wrapper`, className, {
         [`za-fade-${animationState}`]: direction === 'center' && isPending,
       }),
       popup: classnames(prefixCls, {
-        [`${prefixCls}--${direction}`]: !!direction,
-        [`${prefixCls}--nomask`]: direction === 'center' && !mask,
-        [`${prefixCls}--hidden`]: animationState === 'leave',
+        [`${prefixCls}-${direction}`]: !!direction,
+        [`${prefixCls}-nomask`]: direction === 'center' && !mask,
+        [`${prefixCls}-hidden`]: animationState === 'leave',
         [`za-${animationType}-${animationState}`]: direction === 'center' && isPending,
       }),
     };
@@ -188,7 +194,7 @@ export default class Portal extends PureComponent<PortalProps, any> {
     );
   }
 
-  handleMaskClick = (e) => {
+  handleMaskClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation();
     const { onMaskClick } = this.props;
     if (typeof onMaskClick === 'function') {
@@ -227,10 +233,11 @@ export default class Portal extends PureComponent<PortalProps, any> {
 
   renderPortal = (): ReactPortal | null => {
     if (!IS_REACT_16) {
-      ReactDOM.unstable_renderSubtreeIntoContainer(this, this.getComponent(), this._container);
+      ReactDOM.unstable_renderSubtreeIntoContainer(this, this.getComponent(), this._container as HTMLDivElement);
       return null;
     }
-    return ReactDOM.createPortal(this.getComponent(), this._container);
+
+    return ReactDOM.createPortal(this.getComponent(), this._container as HTMLDivElement);
   }
 
   render() {

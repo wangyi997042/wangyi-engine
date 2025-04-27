@@ -1,34 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
-
-import {
-  isInApp,
-  isMobile,
-  isObject,
-  isFunction,
-  urlAllParams,
-  loadMiniProgramSDK,
-  historyPush,
-} from './utils/tools';
-
-import template from './template';
-
-import fetchAPI, { getFetchResult } from './utils/fetchAPI';
-
-import {
-  Toast,
-  Modal,
-  Loading,
-} from './components';
-
-import {
-  // WindowProps,
-  UrlProps,
-  ObjectProps,
-  MethodProps,
-  FrameworkLifeCycles,
-} from './types';
+import { isInApp, isMobile, isObject, isFunction, urlAllParams, loadMiniProgramSDK, historyPush } from '../utils/tools';
+import template from '../template';
+import { IWidgetData, TPath } from '../render';
+import { IFormRef, TNameMap, IOptions } from '../render/types';
+import fetchAPI, { getFetchResult } from '../utils/fetchAPI';
+import { Toast, Modal, Loading } from '../components';
+import ActionConfig from './index';
+import { UrlProps } from '../types';
 
 let root: any = {};
 
@@ -40,9 +20,10 @@ if (typeof window !== 'undefined') {
 
 export interface ActionProps {
   type: string;
-  dataId?: string;
   data?: any;
 }
+
+export type TActionsProps = ActionProps | ActionProps[]
 
 export interface FetchProps {
   url: string;
@@ -50,6 +31,7 @@ export interface FetchProps {
   // 兼容旧版本
   type?: string;
   data?: any;
+  needFormData?: boolean;
   isLoading?: boolean;
   toastMessage?: boolean;
   isUrlParam?: boolean;
@@ -58,8 +40,20 @@ export interface FetchProps {
 
 type ActionCallabck = (data?: any) => void | undefined;
 
-// eslint-disable-next-line import/no-mutable-exports
-let ActionConfig: any = {};
+
+interface IActionOption {
+  actions?: typeof ActionConfig;
+  formData?: object;
+  nameMap?: TNameMap;
+  callback?: () => void;
+  globleData?: object;
+  parent?: IWidgetData;
+  options?: IOptions<any>;
+  form?: IFormRef;
+  result?: object;
+  paths?: TPath;
+  update?: () => void;
+}
 
 /**
  * 跳转链接
@@ -69,7 +63,9 @@ let ActionConfig: any = {};
  * @config {boolean}       isMiniprogramUrl  是否小程序链接，
  * @param  {function}  cb   回调
  */
-export const goUrl = (url: any, cb?: ActionCallabck) => {
+export const goUrl = (url: any, options: { callback?: ActionCallabck } = {}) => {
+  const { callback } = options;
+
   if (!url) {
     console.error('action url');
     return false;
@@ -77,8 +73,9 @@ export const goUrl = (url: any, cb?: ActionCallabck) => {
 
   let mode = 'history';
   let isMiniprogramUrl = false;
-  if (cb && isFunction(cb)) {
-    cb(url);
+
+  if (callback && isFunction(callback)) {
+    callback(url);
   }
 
   if (isObject(url)) {
@@ -109,7 +106,9 @@ export const goUrl = (url: any, cb?: ActionCallabck) => {
  * @param  {string} locUrl 取值链接，未传直接回调
  * @param  {function}  cb   回调
  */
-export const goUrlParam = (url: any, locUrl: any, cb?: ActionCallabck) => {
+export const goUrlParam = (url: any, options: { locUrl?: any; callback?: ActionCallabck } = {}) => {
+  const { locUrl, callback } = options;
+
   if (!url) {
     console.error('action url param');
     return false;
@@ -121,15 +120,15 @@ export const goUrlParam = (url: any, locUrl: any, cb?: ActionCallabck) => {
   // 回调
   if (isFunction(locUrl)) {
     locUrl(url);
-  } else if (cb && isFunction(cb)) {
-    cb(url);
+  } else if (callback && isFunction(callback)) {
+    callback(url);
   }
 
   if (isObject(url)) {
     ({ url, mode = 'history', isMiniprogramUrl = false } = url);
   }
 
-  const tempUrl = (typeof locUrl === 'string' ? locUrl : root.location.href);
+  const tempUrl = typeof locUrl === 'string' ? locUrl : root.location.href;
 
   const urlParams = urlAllParams(tempUrl);
   const addParams: string[] = [];
@@ -140,7 +139,7 @@ export const goUrlParam = (url: any, locUrl: any, cb?: ActionCallabck) => {
 
     // 去重复参数
     if (!reg.test(url)) {
-      addParams.push(`${key}=${encodeURIComponent(urlParams[key])}`);
+      addParams.push(`${key}=${encodeURIComponent((urlParams[key] as string))}`);
     }
 
     return key;
@@ -171,16 +170,18 @@ export const goUrlParam = (url: any, locUrl: any, cb?: ActionCallabck) => {
  * @config {string}   type    返回小程序
  * @param  {function} cb      回调
  */
-export const miniWebview = (data: UrlProps, cb?: ActionCallabck) => {
+export const miniWebview = (data: UrlProps, options: { callback?: ActionCallabck } = {}) => {
+  const { callback } = options;
+
   if (!isObject(data)) {
     return false;
   }
 
-  const { url, type } = data;
-
-  if (cb && isFunction(cb)) {
-    cb(data);
+  if (callback && isFunction(callback)) {
+    callback(data);
   }
+
+  const { url, type } = data;
 
   // 小程序 webview
   // load SDK 防止页面未引入script
@@ -216,17 +217,14 @@ export const miniWebview = (data: UrlProps, cb?: ActionCallabck) => {
  * @config {string}  acceptCharset  字符编码
  * @param  {function} cb      回调
  */
-export const goFormUrl = (data: UrlProps, cb?: ActionCallabck) => {
-  const {
-    method = 'get',
-    url,
-    params,
-    acceptCharset,
-  } = data;
+export const goFormUrl = (data: UrlProps, options: { callback?: ActionCallabck }) => {
+  const { callback } = options;
 
-  if (cb && isFunction(cb)) {
-    cb(data);
+  if (callback && isFunction(callback)) {
+    callback(data);
   }
+
+  const { method = 'get', url, params, acceptCharset } = data;
 
   if (method && method.toUpperCase() === 'GET') {
     root.location.href = url;
@@ -244,7 +242,7 @@ export const goFormUrl = (data: UrlProps, cb?: ActionCallabck) => {
     document.body.appendChild(form);
 
     if (params) {
-      Object.keys(params).forEach((key) => {
+      Object.keys(params).forEach((key: string) => {
         const input = document.createElement('input');
 
         input.type = 'hidden';
@@ -262,9 +260,11 @@ export const goFormUrl = (data: UrlProps, cb?: ActionCallabck) => {
  * 刷新页面
  * @param  {function} cb   回调
  */
-export const reload = (cb?: ActionCallabck) => {
-  if (cb && isFunction(cb)) {
-    cb();
+export const reload = (data: never, options: { callback?: ActionCallabck } = {}) => {
+  const { callback } = options;
+
+  if (callback && isFunction(callback)) {
+    callback();
   }
 
   if (root.history) {
@@ -278,9 +278,11 @@ export const reload = (cb?: ActionCallabck) => {
  * 返回上一个页面
  * @param  {function} cb   回调
  */
-export const goBack = (cb?: ActionCallabck) => {
-  if (cb && isFunction(cb)) {
-    cb();
+export const goBack = (data: never, options: { callback?: ActionCallabck } = {}) => {
+  const { callback } = options;
+
+  if (callback && isFunction(callback)) {
+    callback();
   }
 
   // 在webview跳转
@@ -290,7 +292,7 @@ export const goBack = (cb?: ActionCallabck) => {
     // JSBridge.ready(() => {
     //   JSBridge.goBack();
     // });
-  }
+  };
 };
 
 /**
@@ -300,20 +302,21 @@ export const goBack = (cb?: ActionCallabck) => {
  * @config {string}   name 窗口打开状态，默认_blank
  * @param  {function} cb   回调
  */
-export const download = (data: UrlProps, cb?: ActionCallabck) => {
+export const download = (data: UrlProps, options: { callback?: ActionCallabck } = {}) => {
+  const { callback } = options;
+
   if (!data) {
     console.error('action download params');
-    return false;
+    return Promise.reject(Error('action download params'));
   }
 
-  if (cb && isFunction(cb)) {
-    cb(data);
+  if (callback && isFunction(callback)) {
+    callback(data);
   }
 
-  root.open(
-    data.url,
-    data.name || '_blank',
-  );
+  root.open(data.url, data.name || '_blank');
+
+  return Promise.resolve();
 };
 
 /**
@@ -324,13 +327,15 @@ export const download = (data: UrlProps, cb?: ActionCallabck) => {
  * @param  {boolean}  mask          是否展示遮罩层，默认true
  * @param  {function} afterClose    关闭回调
  */
-export const toast = (data: any, duration?: number, afterClose?: ActionCallabck) => {
+export const toast = (data: any, options: { duration?: number; afterClose?: ActionCallabck } = {}) => {
   if (!data) {
     console.error('action toast');
-    return false;
+    return Promise.reject(Error('action toast'));
   }
 
-  const cb: any = (isFunction(duration) ? duration : afterClose);
+  const { afterClose } = options;
+  let { duration } = options
+  const cb: any = isFunction(duration) ? duration : afterClose;
   let message = data;
   let mask = true;
 
@@ -354,7 +359,7 @@ export const toast = (data: any, duration?: number, afterClose?: ActionCallabck)
   }
 
   if (document.getElementById('actionToast')) {
-    return false;
+    return Promise.reject(Error('重复'));;
   }
 
   const div = document.createElement('div');
@@ -370,16 +375,22 @@ export const toast = (data: any, duration?: number, afterClose?: ActionCallabck)
     document.body.removeChild(div);
   };
 
-  ReactDOM.render((
-    <Toast
-      visible
-      mask={mask}
-      stayTime={typeof duration === 'number' ? duration : 3000}
-      afterClose={onClose}
-    >
-      {message}
-    </Toast>
-  ), div);
+  return new Promise((resolve) => {
+    ReactDOM.render(
+      <Toast
+        visible
+        mask={mask}
+        stayTime={typeof duration === 'number' ? duration : 3000}
+        afterClose={() => {
+          resolve({});
+          onClose();
+        }}
+      >
+        {message}
+      </Toast>,
+      div,
+    );
+  });
 };
 
 /**
@@ -437,10 +448,10 @@ export const toastModal = (data: any, cb?: ActionCallabck) => {
       onMaskClick={onClose}
     >
       {title && (
-      <Modal.Header
-        title={title}
-        onClose={() => onClose()}
-      />
+        <Modal.Header
+          title={title}
+          onClose={() => onClose()}
+        />
       )}
       <Modal.Body>
         <div className={`${prefixCls}-body modal-toast-body-center`}>{message}</div>
@@ -467,16 +478,18 @@ export interface CopyProps {
  * @config {string}   text    文本
  * @param  {function} cb      回调
  */
-export const copy = (data: CopyProps, cb?: ActionCallabck) => {
-  const { text } = data || {};
+export const copy = (data: CopyProps, options: IActionOption & { callback?: ActionCallabck } = {}) => {
+  const { callback, result, actions = ActionConfig } = options;
+
+  if (callback && isFunction(callback)) {
+    callback(data);
+  }
+
+  const { text } = { ...data, ...result };
 
   if (typeof text !== 'string') {
     console.error('请传入字符串');
     return false;
-  }
-
-  if (cb && isFunction(cb)) {
-    cb(data);
   }
 
   try {
@@ -494,20 +507,20 @@ export const copy = (data: CopyProps, cb?: ActionCallabck) => {
     const success = document.execCommand('copy');
 
     if (success) {
-      toast('复制成功');
+      actions.toast('复制成功');
     } else {
-      toast('复制失败');
+      actions.toast('复制失败');
     }
 
     root.getSelection().removeAllRanges();
     document.body.removeChild(div);
 
-    return true;
+    return Promise.resolve(text);
   } catch (error) {
     console.error(error);
   }
 
-  return false;
+  return Promise.reject(Error('copy错误'));
 };
 
 export interface ModelProps {
@@ -531,11 +544,12 @@ export interface ModelProps {
  * @config {object[]} footer  底部
  * @param  {function} cb   回调
  */
-export const model = (data: ModelProps, cb?: ActionCallabck) => {
+export const model = (data: ModelProps, mOptions: { callback?: ActionCallabck } = {}) => {
   if (document.getElementById('actionModel')) {
     return false;
   }
 
+  const { callback } = mOptions;
   const div = document.createElement('div');
   div.id = 'actionModel';
   document.body.appendChild(div);
@@ -544,7 +558,7 @@ export const model = (data: ModelProps, cb?: ActionCallabck) => {
   // type=line
   const { label, options, footer, buttons, closable, className, widget, log, onLog } = data;
   let { type } = data;
-
+  // type=line
   // 兼容旧动作
   if (widget && widget === 'text-model-line') {
     type = 'line';
@@ -563,16 +577,15 @@ export const model = (data: ModelProps, cb?: ActionCallabck) => {
 
   // 关闭弹层
   const onClose = () => {
-    if (cb && isFunction(cb)) {
-      cb(data);
+    if (callback && isFunction(callback)) {
+      callback(data);
     }
 
     ReactDOM.unmountComponentAtNode(div);
     document.body.removeChild(div);
   };
 
-  const onButton = (action) => {
-    // 新动作结构 { action: { type: string data: object } }
+  const onButton = (action: any, resolve: any, reject: any) => {
     if (action && action.action) {
       ({ action } = action);
     }
@@ -590,12 +603,14 @@ export const model = (data: ModelProps, cb?: ActionCallabck) => {
 
     if (action.type === 'cancel') {
       onClose();
+      reject(Error('取消'));
       return false;
     }
 
     if (ActionConfig[action.type]) {
       onClose();
-      ActionConfig[action.type](action.data);
+      resolve({});
+      ActionConfig[action.type]?.(action.data);
     }
   };
 
@@ -610,59 +625,74 @@ export const model = (data: ModelProps, cb?: ActionCallabck) => {
       case 'image':
         return <img src={href} alt={alt || ''} />;
       case 'copy':
-        return <><span>{template(itemlabel)}</span><span className="model-copy-btn" onClick={() => copy({ text: copyText })}>复制</span></>;
+        return (
+          <>
+            <span>{template(itemlabel)}</span>
+            <span className="model-copy-btn" onClick={() => copy({ text: copyText })}>
+              复制
+            </span>
+          </>
+        );
       default:
         break;
     }
   };
 
   // 兼容老版本
-  const footers = (footer || buttons || []);
+  const footers = footer || buttons || [];
 
-  ReactDOM.render(
-    (
+  return new Promise((resolve, reject) => {
+    ReactDOM.render(
       <Modal
         visible
         className={cls}
         width={width}
-        onMaskClick={() => onClose()}
+        onMaskClick={() => {
+          reject(Error('取消'));
+          onClose();
+        }}
       >
         <Modal.Header
           title={label}
           closable={closable}
-          onClose={() => onClose()}
+          onClose={() => {
+            reject(Error('取消'));
+            onClose();
+          }}
         />
         <Modal.Body>
           {
-            (options && Array.isArray(options) && options.length) ? options.map((item, index) => (
-              <div
-                className={classnames(`${prefixCls}-item`, { [`${prefixCls}-item-${item.type}`]: !!item.type })}
-                key={`item_${index}`}
-                style={item.style}
-              >
-                {renderOptions(item)}
-              </div>
-            )) : null
+            Array.isArray(options) && options.length
+              ? options.map((item, index) => (
+                <div className={classnames(`${prefixCls}-item`, { [`${prefixCls}-item-${item.type}`]: !!item.type })} key={`item_${index}`} style={item.style}>
+                  {renderOptions(item)}
+                </div>
+              ))
+              : null
           }
         </Modal.Body>
         <Modal.Footer>
           {
-            (footers && Array.isArray(footers) && footers.length) ? footers.map((item, index) => (
-              <button
-                className={`${prefixCls}-button`}
-                key={`item_${index}`}
-                onClick={() => onButton(item)}
-                style={item.style}
-              >
-                {item.label}
-              </button>
-            )) : null
+            Array.isArray(footers) && footers.length
+              ? footers.map((item, index) => (
+                <button
+                  className={`${prefixCls}-button`}
+                  key={`item_${index}`}
+                  onClick={() => {
+                    onButton(item, resolve, reject)
+                  }}
+                  style={item.style}
+                >
+                  {item.label}
+                </button>
+              ))
+              : null
           }
         </Modal.Footer>
-      </Modal>
-    ),
-    div,
-  );
+      </Modal>,
+      div,
+    )
+  });
 };
 
 /**
@@ -673,26 +703,26 @@ export const model = (data: ModelProps, cb?: ActionCallabck) => {
  * @config {array<{ label: string }>} footer  底部
  * @param  {function} cb   回调
  */
-export const alert = (data: ModelProps, cb?: ActionCallabck) => {
+export const alert = (data: ModelProps, aOptions: { callback?: ActionCallabck } = {}) => {
   if (document.getElementById('actionAlert')) {
     return false;
   }
 
+  const { callback } = aOptions;
   const div = document.createElement('div');
   div.id = 'actionAlert';
   document.body.appendChild(div);
 
   const prefixCls = 'cre-alert';
   const { label, options, className } = data;
+  const modelCls = isMobile ? `${prefixCls}-mobile` : `${prefixCls}-web`;
+  const width = isMobile ? '80%' : '880px';
   let { footer } = data;
-
-  const modelCls = ((isMobile || isInApp) ? `${prefixCls}-mobile` : `${prefixCls}-web`);
-  const width = ((isMobile || isInApp) ? '80%' : '880px');
 
   // 关闭弹层
   const onClose = () => {
-    if (cb && isFunction(cb)) {
-      cb(data);
+    if (callback && isFunction(callback)) {
+      callback(data);
     }
 
     ReactDOM.unmountComponentAtNode(div);
@@ -710,55 +740,68 @@ export const alert = (data: ModelProps, cb?: ActionCallabck) => {
     ];
   }
 
-  const onButton = (action) => {
+  const onButton = (action: any, resolve: any, reject: any) => {
     if (!(action && action.type)) {
-      return false;
+      return;
     }
 
     if (action.type === 'cancel') {
+      reject(Error('取消'));
       onClose();
-      return false;
+      return;
     }
 
     if (ActionConfig[action.type]) {
       onClose();
-      ActionConfig[action.type](action.data);
+      resolve({});
+      ActionConfig[action.type]?.(action.data);
     }
   };
 
-  ReactDOM.render(
-    (
+  return new Promise((resolve, reject) => {
+    ReactDOM.render(
       <Modal
         visible
         className={classnames(prefixCls, modelCls, className)}
         width={width}
-        onMaskClick={() => onClose()}
+        onMaskClick={() => {
+          reject(Error('取消'));
+          onClose()
+        }}
       >
         <Modal.Header title={label} />
         <Modal.Body>
           {
-            (options && Array.isArray(options) && options.length) ? options.map((item, index) => (
-              <div className={`${prefixCls}-item`} key={`item_${index}`}>{item.label}</div>
-            )) : null
+            Array.isArray(options) && options.length
+              ? options.map((item, index) => (
+                <div className={`${prefixCls}-item`} key={`item_${index}`}>
+                  {item.label}
+                </div>
+              ))
+              : null
           }
         </Modal.Body>
         <Modal.Footer>
           {
-            (footer && Array.isArray(footer) && footer.length) ? footer.map((item, index) => (
-              <button
-                className={`${prefixCls}-button`}
-                key={`item_${index}`}
-                onClick={() => onButton(item.action)}
-              >
-                {item.label}
-              </button>
-            )) : null
+            Array.isArray(footer) && footer.length
+              ? footer.map((item, index) => (
+                <button
+                  className={`${prefixCls}-button`}
+                  key={`item_${index}`}
+                  onClick={() => {
+                    onButton(item.action, resolve, reject)
+                  }}
+                >
+                  {item.label}
+                </button>
+              ))
+              : null
           }
         </Modal.Footer>
-      </Modal>
-    ),
-    div,
-  );
+      </Modal>,
+      div,
+    );
+  });
 };
 
 /**
@@ -767,12 +810,14 @@ export const alert = (data: ModelProps, cb?: ActionCallabck) => {
  * @param {string}    label    标题
  * @param  {function} cb       回调
  */
-export const tips = (content: any = '', label: string = '', cb?: ActionCallabck) => {
-  if (document.getElementById('actionTips')) {
-    return false;
-  }
+export const tips = (data: { content: React.ReactNode; label: string }, options: any) => {
+  const { result, callback } = options;
+  const assignData = { ...result, ...data };
+  const { content = '', label = '' } = assignData;
 
-  const callback: any = (isFunction(label) ? label : cb);
+  if (document.getElementById('actionTips')) {
+    return Promise.reject();
+  }
 
   const div = document.createElement('div');
   div.id = 'actionTips';
@@ -782,7 +827,6 @@ export const tips = (content: any = '', label: string = '', cb?: ActionCallabck)
 
   const modelCls = ((isMobile || isInApp) ? `${prefixCls}-mobile` : `${prefixCls}-web`);
   const width = ((isMobile || isInApp) ? '80%' : '880px');
-  const title = (typeof label === 'function' ? '' : label);
 
   // 关闭弹层
   const onClose = () => {
@@ -794,26 +838,30 @@ export const tips = (content: any = '', label: string = '', cb?: ActionCallabck)
     document.body.removeChild(div);
   };
 
-  ReactDOM.render(
-    (
+  return new Promise((resolve) => {
+    ReactDOM.render(
       <Modal
         visible
         className={`${prefixCls} ${modelCls}`}
         width={width}
-        onMaskClick={() => onClose()}
+        onMaskClick={() => {
+          resolve({});
+          onClose()
+        }}
       >
         <Modal.Header
-          title={title}
+          title={label}
           closable
-          onClose={() => onClose()}
+          onClose={() => {
+            resolve({});
+            onClose()
+          }}
         />
-        <Modal.Body>
-          {content}
-        </Modal.Body>
-      </Modal>
-    ),
-    div,
-  );
+        <Modal.Body>{content}</Modal.Body>
+      </Modal>,
+      div,
+    );
+  });
 };
 
 /**
@@ -828,73 +876,55 @@ export const tips = (content: any = '', label: string = '', cb?: ActionCallabck)
  * @param  {object}   params       附加参数
  * @param  {function} cb           回调
  */
-export const fetchInterface = (fetch: FetchProps, params: ObjectProps = {}, cb?: ActionCallabck) => {
-  const {
-    url = '',
-    type,
-    data = {},
-    isLoading = false,
-    toastMessage = true,
-    isUrlParam = false,
-    onLog,
-  } = fetch;
-  let {
-    method = 'get',
-  } = fetch;
-
-  // 兼容旧动作
-  if (type) {
-    method = type;
-  }
+export const fetchInterface = (fetch: FetchProps, options: any) => {
+  const { params = {}, formData, actions = ActionConfig, callback, result } = options || {};
+  const { url = '', method, needFormData, data = {}, isLoading = false, toastMessage = true, isUrlParam = false } = fetch || {};
 
   if (isLoading) {
     Loading.show();
   }
 
-  const callback: any = (isFunction(params) ? params : cb);
-  const tempParams = (isFunction(params) ? {} : params);
   const urlParams = isUrlParam ? urlAllParams(root.location.href) : {};
 
-  fetchAPI.fetch({
+  return fetchAPI.fetch({
     path: url,
     method,
     data: {
+      ...result,
       ...urlParams,
       ...data,
-      ...tempParams,
+      ...params,
+      ...(needFormData ? formData : {}),
     },
-    success: (result: any) => {
-      if (isLoading) {
-        Loading.hide();
+  }).finally(() => {
+    if (isLoading) {
+      Loading.hide();
+    }
+  }).then((response: any) => {
+    if (callback && isFunction(callback)) {
+      callback(response);
+    }
+
+    if (!response) {
+      actions.toast('返回数据异常');
+      return Promise.reject(Error('返回数据异常'));
+    }
+
+    if (+response.code === 0 || response.result === 'success') {
+      const newResult = getFetchResult(response);
+
+      if (newResult && newResult.type && actions[newResult.type]) {
+        actions[newResult.type](newResult.data);
       }
 
-      if (!result) {
-        toast('请求数据异常');
-        return false;
-      }
+      return Promise.resolve(newResult);
+    }
 
-      if (+result.code === 0 || result.result === 'success') {
-        const newResult = getFetchResult(result);
+    if (toastMessage && (response.message || response.reason)) {
+      actions.toast(response.message || response.reason);
 
-        if (newResult && newResult.type && ActionConfig[newResult.type]) {
-          if (onLog && isObject(newResult.data)) {
-            Object.assign(newResult.data, { onLog });
-          }
-          ActionConfig[newResult.type](newResult.data);
-        }
-      } else if (toastMessage && (result.message || result.reason)) {
-        toast(result.message || result.reason);
-      }
-
-      if (callback && isFunction(callback)) {
-        callback(result);
-      }
-    },
-    error: () => {
-      if (isLoading) {
-        Loading.hide();
-      }
-    },
+      return Promise.reject(response.message || response.reason);
+    }
   });
 };
 
@@ -914,9 +944,11 @@ export interface ShareProps {
  * @config {string}  link     分享链接
  * @param  {function} cb        回调
  */
-export const share = (data: ShareProps, cb?: ActionCallabck) => {
-  if (cb && isFunction(cb)) {
-    cb(data);
+export const share = (data: ShareProps, options: IActionOption & { result: any, callback?: ActionCallabck }) => {
+  const { callback, actions = ActionConfig } = options;
+
+  if (callback && isFunction(callback)) {
+    callback(data);
   }
 
   if (isInApp) {
@@ -925,17 +957,17 @@ export const share = (data: ShareProps, cb?: ActionCallabck) => {
       ...data,
     };
 
-    JSBridge.ready(() => {
-      JSBridge.share(data);
-    });
+    // JSBridge.ready(() => {
+    //   JSBridge.share(data);
+    // });
   } else if (data && data.link) {
     window.location.href = data.link;
   } else {
-    toast('分享失败');
+    actions.toast('分享失败');
   }
 };
 
-ActionConfig = {
+export default {
   // 跳转链接
   url: goUrl,
   // 跳转URL,带当前链接参数
@@ -968,84 +1000,5 @@ ActionConfig = {
   share,
   // 复制文本
   copy,
+  tips,
 };
-
-/**
- * 注册全局动作
- * @param actionList 动作列表
- * return object
- */
-export const registerAction = (actionList: MethodProps) => {
-  if (!(actionList && Object.keys(actionList).length)) {
-    return ActionConfig;
-  }
-
-  ActionConfig = Object.assign(ActionConfig, actionList);
-
-  return ActionConfig;
-};
-
-interface ActionOptions {
-  actionList?: any[];
-  actionData?: any[];
-}
-
-/**
- * 触发事件
- * @param addAction 新加事件
- */
-export const onAction = (
-  props: ActionProps,
-  options?: ActionOptions,
-  lifecycle?: FrameworkLifeCycles,
-) => {
-  if (!props) {
-    return false;
-  }
-
-  const { actionList, actionData } = options || {};
-  const { beforeAction, afterAction } = lifecycle || {};
-
-  // 执行动作之前生命周期
-  if (beforeAction && isFunction(beforeAction)) {
-    beforeAction(props);
-  }
-
-  const action = Object.assign({}, ActionConfig, actionList);
-  const { type, dataId } = props;
-  let { data } = props;
-
-  if (action[type]) {
-    // 关联外部数据
-    if (dataId) {
-      if (actionData && Array.isArray(actionData) && actionData.length) {
-        const findData = actionData.filter((item) => item.id === dataId);
-
-        if (findData && findData.length) {
-          data = {
-            ...data,
-            ...findData[0].data,
-          };
-        }
-      } else {
-        console.error('Action Undefined Relation Data===', props);
-      }
-    }
-
-    action[type](data, (item) => {
-      if (afterAction && isFunction(afterAction)) {
-        afterAction(props, item);
-      }
-    });
-    return true;
-  }
-
-  console.error('Undefined Action===', props);
-
-  return false;
-};
-
-// 注入全局变量
-root.CRE_ACTION = ActionConfig;
-
-export default ActionConfig;

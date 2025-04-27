@@ -4,9 +4,11 @@ module.exports = {
   entry: './src/engine/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'index.js',
-    library: 'MyLibrary',
-    libraryTarget: 'umd',
+    filename: 'index.js', // CommonJS 格式的文件
+    libraryTarget: 'commonjs2', // 输出为 CommonJS 格式
+    // filename: 'index.js',
+    // library: 'MyLibrary',
+    // libraryTarget: 'umd',
     globalObject: 'this',
     clean: true,
   },

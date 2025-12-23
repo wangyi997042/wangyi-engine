@@ -1,34 +1,51 @@
-import { Button, Form } from "antd"
+import { Form } from "antd"
 import {
-  Page
+  Page,
+  Button
 } from '../engine/components/index'
-import { renderEngine } from "../engine/index"
+import { renderEngine, registerAction } from "../engine/index"
 
 export default function engine() {
   const [form] = Form.useForm();
   const dataSource = {
-    "widget": "Button",
-    "children": []
-}
+    "widget": "Page",
+    "childrens": [
+      {
+        "widget": "button",
+        "wprops": {
+          "type": "primary",
+          "label": "按钮"
+        },
+        action: [
+          {
+            type: 'submit2222',
+            data: { 'aa': 22 }
+          }
+        ]
+      }
+    ]
+  }
   // 参数
   const options = {
-    components: {Button, Page},
+    components: { Button, Page },
     form,
     params: { 'dd': 11 }
-};
+  };
 
 
 
-const onChange = (v) => {
-  console.log(v);
-  
-}
-// 事件监听
-const events = {
+  const submit2222 = (v, d = () => {}) => {
+    console.log(23, v, d({ee: 33}));
+
+  }
+
+  registerAction({submit2222})
+  // 事件监听
+  const events = {
     // onChange
-};
+  };
 
 
-return renderEngine(dataSource, options, events);
+  return renderEngine(dataSource, options, events);
 
 }

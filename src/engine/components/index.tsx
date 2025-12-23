@@ -12,3 +12,5 @@ export { default as Popup } from './popup';
 export { default as LockScroll } from './lockScroll';
 
 export { default as Cell } from './cell';
+
+export { default as Button } from './Button';

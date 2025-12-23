@@ -1,14 +1,15 @@
-import { Button } from "antd"
+// import { Button } from "antd"
 import {
   Page,
-  Card
+  Card,
+  Button
 } from '../engine/components/index'
 import { renderEngine, AnalysisEngine } from "../engine/index"
 
 
 export default function engine() {
   // const [form] = Form.useForm();
-  const item = {
+  const dataSource = {
     widget: 'page',
     wprops: {
       label: '测试代码',
@@ -23,6 +24,20 @@ export default function engine() {
       },
       {
         widget: 'button',
+        action: [
+          {
+            type: 'copy',
+            data: {
+              text: '一段内容',
+            },
+          },
+          {
+            type: 'toast',
+            data: {
+              message: '复制成功',
+            },
+          },
+        ],
         wprops: {
           label: '测试按钮',
           type: 'primary',
@@ -39,5 +54,14 @@ export default function engine() {
     },
   };
 
-  return <AnalysisEngine dataSource={item} options={options} />;
+  return <>
+    <AnalysisEngine
+      dataSource={dataSource}
+      options={options}
+    >
+      <div>
+        子节点
+      </div>
+    </AnalysisEngine>
+  </>
 }
